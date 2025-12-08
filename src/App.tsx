@@ -3,7 +3,7 @@ import './App.css';
 import {SavedDisplayType} from "@evovee/tecnova-types";
 import tecnova from "./lib/tecnova";
 import {tecnovaClient} from "./lib/tecnova-client";
-import {ResponsiveDisplayRenderer} from "@evovee/tv-displays";
+import {ResponsiveDisplayRenderer} from "./components/responsive-display-renderer";
 
 function App() {
     const [initialDisplay, setInitialDisplay] = useState<SavedDisplayType | null>(null);
