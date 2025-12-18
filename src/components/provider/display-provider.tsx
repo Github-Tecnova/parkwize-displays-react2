@@ -26,11 +26,9 @@ export function DisplayProvider({
     const parkingId = new URLSearchParams(window.location.search).get('parkingId') || "36201249-9e37-4888-887f-d3ebb30d8d38";
     const kioskId = new URLSearchParams(window.location.search).get('kioskId') || "127";
 
-    const routeInfo = {
-        orgId: orgId,
+    const [routeInfo] = useState({orgId: orgId,
         parkingId: parkingId,
-        kioskId: kioskId
-    };
+        kioskId: kioskId});
 
     const wsRef = useRef<WebSocket | null>(null);
     const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,7 +38,6 @@ export function DisplayProvider({
     // Simple refetch function
     const refetchDisplay = useCallback(async () => {
         try {
-
             const { data } = await tecnova.fetchCurrentKioskDisplay(orgId, parkingId, kioskId);
             if (data) {
                 setDisplay(data as SavedDisplayType);
