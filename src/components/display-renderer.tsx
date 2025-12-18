@@ -47,7 +47,7 @@ export function DisplayRenderer({
   textFormatter,
 }: DisplayRendererProps) {
   // Add animation styles to the document
- /* useEffect(() => {
+  useEffect(() => {
     const style = document.getElementById("display-renderer-animations");
     if (!style) {
       const styleSheet = document.createElement("style");
@@ -83,8 +83,8 @@ export function DisplayRenderer({
       document.head.appendChild(styleSheet);
     }
   }, []);
-*/
-  /*const getAnimationStyles = (
+
+  const getAnimationStyles = (
     element: DisplayElementType,
   ): React.CSSProperties => {
     if (element.animation.type === "none") return {};
@@ -113,7 +113,7 @@ export function DisplayRenderer({
     return {
       animation: `${animationName} ${duration}s ${timing} ${delay}s ${iterationValue} ${direction}`,
     };
-  };*/
+  };
 
   const ElementRenderer = ({ element }: { element: DisplayElementType }) => {
     // Base styles without animation
@@ -138,7 +138,7 @@ export function DisplayRenderer({
         : "none",
       display: element.visible ? undefined : "none",
       visibility: element.visible ? "visible" : "hidden",
-      //...getAnimationStyles(element),
+      ...getAnimationStyles(element),
     };
 
     switch (element.type) {

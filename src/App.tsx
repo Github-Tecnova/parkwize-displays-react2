@@ -1,49 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import './App.css';
-import {SavedDisplayType} from "@evovee/tecnova-types";
-import tecnova from "./lib/tecnova";
 import {tecnovaClient} from "./lib/tecnova-client";
 import {ResponsiveDisplayRenderer} from "./components/responsive-display-renderer";
+import {useDisplay} from "./components/provider/display-provider";
 
 function App() {
-    const [initialDisplay, setInitialDisplay] = useState<SavedDisplayType | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchInitialDisplay = async () => {
-            try {
-                setLoading(true);
-                // Get route info from URL params or environment
-                const orgId = new URLSearchParams(window.location.search).get('orgId') || "0b22a7d7-08f6-4ae8-804c-7b58c0def7c5";
-                const parkingId = new URLSearchParams(window.location.search).get('parkingId') || "36201249-9e37-4888-887f-d3ebb30d8d38";
-                const kioskId = new URLSearchParams(window.location.search).get('kioskId') || "127";
-
-                const { data } = await tecnova.fetchCurrentKioskDisplay(orgId, parkingId, kioskId);
-                setInitialDisplay(data as SavedDisplayType);
-            } catch (err) {
-                console.error("Error fetching initial display:", err);
-                setError("Failed to load display");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchInitialDisplay();
-    }, []);
-
-    if (loading) {
-        return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-    }
-
-    if (error || !initialDisplay) {
-        return <div className="flex items-center justify-center min-h-screen text-red-500">{error || "No display data"}</div>;
-    }
-
-    console.log(initialDisplay);
-
-    const priceGroup = initialDisplay.PriceGroup;
-    const config = initialDisplay.config;
+    const { config, priceGroup } = useDisplay();
 
     if (!config) {
         return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "black" }}>No config available</div>;
