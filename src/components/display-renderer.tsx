@@ -23,18 +23,18 @@ const renderBackground = (background: Background) => {
       if (background.gradient) {
         const { type, direction, stops } = background.gradient;
         const stopStrings = stops
-          .map((stop: any) => `${stop.color} ${stop.position}%`)
+          .map((stop: any) => stop.color + " " + stop.position + "%")
           .join(", ");
         if (type === "linear") {
-          return `linear-gradient(${direction}deg, ${stopStrings})`;
+          return "linear-gradient(" + direction + "deg, " + stopStrings + ")";
         } else {
-          return `radial-gradient(circle, ${stopStrings})`;
+          return "radial-gradient(circle, " + stopStrings + ")";
         }
       }
       return "#ffffff";
     case "image":
       if (background.image) {
-        return `url(${background.image.url})`;
+        return "url(" + background.image.url + ")";
       }
       return "#ffffff";
     default:
@@ -124,27 +124,22 @@ export function DisplayRenderer({
       zIndex: element.position.z,
       width: element.size.width === "auto" ? "auto" : element.size.width,
       height: element.size.height === "auto" ? "auto" : element.size.height,
-      transform: `rotate(${element.transform.rotation}deg) scale(${element.transform.scaleX}, ${element.transform.scaleY}) skew(${element.transform.skewX}deg, ${element.transform.skewY}deg)`,
-      margin: `${element.margin.top}px ${element.margin.right}px ${element.margin.bottom}px ${element.margin.left}px`,
-      padding: `${element.padding.top}px ${element.padding.right}px ${element.padding.bottom}px ${element.padding.left}px`,
+      transform: "rotate(" + element.transform.rotation + "deg) scale(" + element.transform.scaleX + ", " + element.transform.scaleY + ") skew(" + element.transform.skewX + "deg, " + element.transform.skewY + "deg)",
+      margin: element.margin.top + "px " + element.margin.right + "px " + element.margin.bottom + "px " + element.margin.left + "px",
+      padding: element.padding.top + "px " + element.padding.right + "px " + element.padding.bottom + "px " + element.padding.left + "px",
       border:
         element.border.style !== "none"
-          ? `${element.border.width}px ${element.border.style} ${element.border.color}`
+          ? element.border.width + "px " + element.border.style + " " + element.border.color
           : "none",
       borderRadius: element.border.radius,
       background: renderBackground(element.background),
       boxShadow: element.shadow.enabled
-        ? `${element.shadow.offsetX}px ${element.shadow.offsetY}px ${element.shadow.blur}px ${element.shadow.spread}px ${element.shadow.color}`
+        ? element.shadow.offsetX + "px " + element.shadow.offsetY + "px " + element.shadow.blur + "px " + element.shadow.spread + "px " + element.shadow.color
         : "none",
       display: element.visible ? undefined : "none",
       visibility: element.visible ? "visible" : "hidden",
       ...getAnimationStyles(element),
     };
-
-    const arr = ["all", "test", "es", "pe"];
-    const arr2 = ["all3", "test5", "e6s", "p7e"];
-
-    const arr4 = [...arr, ...arr2];
 
     switch (element.type) {
       case "text":
@@ -231,12 +226,12 @@ export function DisplayRenderer({
           ) {
             const { type, direction, stops } = shapeElement.fillGradient;
             const stopStrings = stops
-              .map((stop) => `${stop.color} ${stop.position}%`)
+              .map((stop) => stop.color + " " + stop.position + "%")
               .join(", ");
             if (type === "linear") {
-              return `linear-gradient(${direction}deg, ${stopStrings})`;
+              return "linear-gradient(" + direction + "deg, " + stopStrings + ")";
             } else {
-              return `radial-gradient(circle, ${stopStrings})`;
+              return "radial-gradient(circle, " + stopStrings + ")";
             }
           }
           return shapeElement.fillColor;
@@ -247,7 +242,7 @@ export function DisplayRenderer({
             style={{
               ...baseStyles,
               background: renderShapeBackground(),
-              border: `${shapeElement.strokeWidth}px solid ${shapeElement.strokeColor}`,
+              border: shapeElement.strokeWidth + "px solid " + shapeElement.strokeColor,
               borderRadius:
                 shapeElement.shape === "circle"
                   ? "50%"
@@ -304,7 +299,7 @@ export function DisplayRenderer({
         width: config.canvas.width,
         height: config.canvas.height,
         background: renderBackground(config.canvas.background),
-        padding: `${config.canvas.padding.top}px ${config.canvas.padding.right}px ${config.canvas.padding.bottom}px ${config.canvas.padding.left}px`,
+        padding: config.canvas.padding.top + "px " + config.canvas.padding.right + "px " + config.canvas.padding.bottom + "px " + config.canvas.padding.left + "px",
       }}
     >
       {config.elements.map((element) => (

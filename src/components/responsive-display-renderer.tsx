@@ -99,8 +99,8 @@ export function ResponsiveDisplayRenderer({
       style={{
         overflow: "hidden",
         // Container sizes itself to the scaled display
-        width: fit === "fill" ? "100%" : `${scaledWidth}px`,
-        height: fit === "fill" ? "100%" : `${scaledHeight}px`,
+        width: fit === "fill" ? "100%" : scaledWidth + "px",
+        height: fit === "fill" ? "100%" : scaledHeight + "px",
         minWidth: fit === "contain" ? "auto" : undefined,
         minHeight: fit === "contain" ? "auto" : undefined,
         ...containerStyle,
@@ -109,7 +109,7 @@ export function ResponsiveDisplayRenderer({
       <div
         ref={displayRef}
         style={{
-          transform: `scale(${scale})`,
+          transform: "scale(" + scale + ")",
           transformOrigin: "center center",
           width: config.canvas.width,
           height: config.canvas.height,

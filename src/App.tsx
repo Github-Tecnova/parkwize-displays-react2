@@ -40,12 +40,6 @@ function App() {
         return <div className="flex items-center justify-center min-h-screen text-red-500">{error || "No display data"}</div>;
     }
 
-    const routeInfo = {
-        orgId: new URLSearchParams(window.location.search).get('orgId') || "0b22a7d7-08f6-4ae8-804c-7b58c0def7c5",
-        parkingId: new URLSearchParams(window.location.search).get('parkingId') || "36201249-9e37-4888-887f-d3ebb30d8d38",
-        kioskId: new URLSearchParams(window.location.search).get('kioskId') || "127",
-    };
-
     console.log(initialDisplay);
 
     const priceGroup = initialDisplay.PriceGroup;
@@ -53,10 +47,6 @@ function App() {
 
     if (!config) {
         return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "black" }}>No config available</div>;
-    }
-
-    if (typeof config !== 'object' || Array.isArray(config)) {
-        return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "black" }}>Config is invalid: {typeof config}</div>;
     }
 
     try {
