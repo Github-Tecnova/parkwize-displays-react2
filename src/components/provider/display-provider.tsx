@@ -1,8 +1,8 @@
-
 import React, { Component } from "react";
+import { Client, IFrame } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 import { EnhancedDisplayConfig, PriceGroupType, SavedDisplayType } from "@evovee/tecnova-types";
 import tecnova from "../../lib/tecnova";
-import Stomp from "stompjs";
 
 type DisplayContextType = {
     config: EnhancedDisplayConfig | undefined;
@@ -11,9 +11,7 @@ type DisplayContextType = {
 
 export const DisplayContext = React.createContext<DisplayContextType | undefined>(undefined);
 
-const WEBSOCKET_URL = "wss://api.parkwizeinc.com/ws";
-const RECONNECT_DELAY = 5000;
-const MAX_RECONNECT_ATTEMPTS = 10;
+var WEBSOCKET_URL = "https://api.parkwizeinc.com/ws";
 
 type DisplayProviderState = {
     display: SavedDisplayType | undefined;
@@ -24,9 +22,7 @@ type DisplayProviderProps = {
 }
 
 export class DisplayProvider extends Component<DisplayProviderProps, DisplayProviderState> {
-    private stompClient: Stomp.Client | null = null;
-    private reconnectTimeout: NodeJS.Timeout | null = null;
-    private reconnectAttempts: number = 0;
+    private stompClient: Client | null = null;
     private orgId: string;
     private parkingId: string;
     private kioskId: string;
@@ -37,127 +33,90 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
             display: undefined
         };
 
-        const params = new URLSearchParams(window.location.search);
+        var params = new URLSearchParams(window.location.search);
         this.orgId = params.get('orgId') || "0b22a7d7-08f6-4ae8-804c-7b58c0def7c5";
         this.parkingId = params.get('parkingId') || "36201249-9e37-4888-887f-d3ebb30d8d38";
         this.kioskId = params.get('kioskId') || "127";
     }
 
-    componentDidMount() {
+    componentDidMount(): void {
+        // Fetch initial display data
+        this.refetchDisplay();
+        // Then setup WebSocket for updates
         this.connectWebSocket();
     }
 
-    componentWillUnmount() {
+    componentWillUnmount(): void {
         this.disconnect();
     }
 
-    private disconnect = () => {
-        if (this.reconnectTimeout) {
-            clearTimeout(this.reconnectTimeout);
-            this.reconnectTimeout = null;
+    private disconnect = (): void => {
+        if (this.stompClient) {
+            this.stompClient.deactivate();
+            this.stompClient = null;
         }
-        if (this.stompClient && this.stompClient.connected) {
-            try {
-                this.stompClient.disconnect(function() {
-                    console.log("STOMP disconnected");
-                });
-            } catch (error) {
-                console.error("Error disconnecting STOMP:", error);
-            }
-        }
-        this.stompClient = null;
     };
 
-    private refetchDisplay = () => {
+    private refetchDisplay = (): void => {
         var self = this;
         tecnova.fetchCurrentKioskDisplay(this.orgId, this.parkingId, this.kioskId)
             .then(function(response) {
                 if (response.data) {
-                    self.setState({ display: response.data as SavedDisplayType });
+                    self.setState({ display: response.data as SavedDisplayType | undefined });
                 }
             })
-            .catch(function(error) {
+            .catch(function(error: Error) {
                 console.error("Error refetching display:", error);
             });
     };
 
-    private scheduleReconnect = () => {
-        var self = this;
-        if (this.reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-            this.reconnectAttempts += 1;
-            var delay = RECONNECT_DELAY * Math.pow(1.5, this.reconnectAttempts - 1);
-            console.log("Reconnecting in " + delay + "ms (attempt " + this.reconnectAttempts + ")");
-
-            this.reconnectTimeout = setTimeout(function() {
-                self.connectWebSocket();
-            }, delay);
-        } else {
-            console.error("Max reconnection attempts reached");
-        }
-    };
-
-    private connectWebSocket = () => {
+    private connectWebSocket = (): void => {
         var self = this;
 
-        if (this.stompClient && this.stompClient.connected) {
-            return;
-        }
+        var topic = "/topic/displays/" + this.orgId + "/" + this.parkingId +
+            (this.kioskId ? "/" + this.kioskId : "");
 
-        try {
-            var ws = new WebSocket(WEBSOCKET_URL);
-            this.stompClient = Stomp.over(ws);
+        this.stompClient = new Client({
+            webSocketFactory: function() {
+                return new SockJS(WEBSOCKET_URL) as WebSocket;
+            },
+            reconnectDelay: 5000,
+            heartbeatIncoming: 4000,
+            heartbeatOutgoing: 4000,
+            debug: function(_str: string) {
+                // Uncomment below for debugging
+                // console.log(_str);
+            },
+            onConnect: function() {
+                console.log("STOMP connected");
 
-            // Disable debug logging in production
-            this.stompClient.debug = function(str: string) {
-                console.log(str);
-            };
-
-            var connectHeaders = {
-                'host': 'api.parkwizeinc.com'
-            };
-
-            this.stompClient.connect(
-                connectHeaders,
-                function onConnect() {
-                    console.log("STOMP connected");
-                    self.reconnectAttempts = 0;
-
-                    var topic = "/topic/displays/" + self.orgId + "/" + self.parkingId +
-                        (self.kioskId ? "/" + self.kioskId : "");
-
-                    if (self.stompClient) {
-                        self.stompClient.subscribe(topic, function(message) {
-                            console.log("Display update received");
-                            self.refetchDisplay();
-                        });
-                    }
-                },
-                function onError(error: Stomp.Frame | string) {
-                    console.error("STOMP error:", error);
-                    self.stompClient = null;
-                    self.scheduleReconnect();
-                }
-            );
-
-            // Handle WebSocket close for reconnection
-            ws.onclose = function() {
-                console.log("WebSocket disconnected");
                 if (self.stompClient) {
-                    self.stompClient = null;
-                    self.scheduleReconnect();
+                    self.stompClient.subscribe(topic, function(message) {
+                        console.log("Display update received:", message.body);
+                        self.refetchDisplay();
+                    });
                 }
-            };
+            },
+            onDisconnect: function() {
+                console.log("STOMP disconnected");
+            },
+            onStompError: function(frame: IFrame) {
+                console.error("STOMP error:", frame.headers['message']);
+                console.error("Details:", frame.body);
+            },
+            onWebSocketError: function(event: Event) {
+                console.error("WebSocket error:", event);
+            }
+        });
 
-        } catch (error) {
-            console.error("Error creating WebSocket:", error);
-            this.scheduleReconnect();
-        }
+        this.stompClient.activate();
     };
 
-    render() {
+    render(): React.ReactNode {
+        var display = this.state.display;
         var contextValue: DisplayContextType = {
-            config: this.state.display ? this.state.display.config : undefined,
-            priceGroup: this.state.display ? this.state.display.PriceGroup : undefined
+            config: display ? display.config : undefined,
+            priceGroup: display ? display.PriceGroup : undefined
         };
 
         return (
