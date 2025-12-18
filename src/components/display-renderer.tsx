@@ -141,6 +141,11 @@ export function DisplayRenderer({
       ...getAnimationStyles(element),
     };
 
+    const arr = ["all", "test", "es", "pe"];
+    const arr2 = ["all3", "test5", "e6s", "p7e"];
+
+    const arr4 = [...arr, ...arr2];
+
     switch (element.type) {
       case "text":
         const textElement = element as TextElement;
