@@ -11,7 +11,7 @@ type DisplayContextType = {
 
 export const DisplayContext = React.createContext<DisplayContextType | undefined>(undefined);
 
-const WEBSOCKET_URL = "wss://events-core-api.onrender.com/ws";
+const WEBSOCKET_URL = "wss://api.parkwizeinc.com/ws";
 const RECONNECT_DELAY = 5000;
 const MAX_RECONNECT_ATTEMPTS = 10;
 
@@ -98,9 +98,7 @@ export function DisplayProvider({
                 // Send STOMP CONNECT frame
                 const connectFrame = createStompFrame('CONNECT', {
                     'accept-version': '1.0,1.1,1.2',
-                    'host': 'events-core-api.onrender.com',
-                    'login': 'guest',
-                    'passcode': 'guest'
+                    'host': 'api.parkwizeinc.com'
                 });
                 ws.send(connectFrame);
             };
