@@ -8,7 +8,6 @@ interface ResponsiveDisplayRendererProps {
     fit?: "contain" | "cover" | "fill";
     containerStyle?: React.CSSProperties;
     minScale?: number;
-    maxScale?: number;
     textFormatter: (text: string) => string;
 }
 
