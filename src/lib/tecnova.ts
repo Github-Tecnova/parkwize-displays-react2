@@ -9,7 +9,7 @@ if (!apiKey) {
 
 const tecnova = tecnovaSingleton({
     apiKey: apiKey || "",
-    nodeEnv: nodeEnv,
+    nodeEnv: "production",
 });
 
 export default tecnova;
