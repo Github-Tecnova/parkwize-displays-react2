@@ -28,8 +28,8 @@ export default function ResponsiveSequenceRenderer({config, containerStyle, fit,
                 style={{
                     transform: "scale(" + 1 + ")",
                     transformOrigin: "center center",
-                    width: config.canvas.width,
-                    height: config.canvas.height,
+                    width: "1080px",
+                    height: "1920px",
                 }}
             >
                 <SequenceRenderer config={config} textFormatter={textFormatter} />
