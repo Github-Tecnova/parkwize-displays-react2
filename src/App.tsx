@@ -1,110 +1,83 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import './App.css';
-import {SavedDisplayType} from "@evovee/tecnova-types";
-import tecnova from "./lib/tecnova";
-import {tecnovaClient} from "./lib/tecnova-client";
 import {ResponsiveDisplayRenderer} from "./components/responsive-display-renderer";
+import {useDisplay} from "./components/providers/display-provider";
+import {tecnovaClient} from "./lib/tecnova-client";
+import {calculateFieldValue, formatCAD} from "./lib/utils";
+import ResponsiveSequenceRenderer from "./components/responsive-sequence-renderer";
 
 function App() {
-    const [initialDisplay, setInitialDisplay] = useState<SavedDisplayType | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchInitialDisplay = async () => {
-            try {
-                setLoading(true);
-                // Get route info from URL params or environment
-                const orgId = new URLSearchParams(window.location.search).get('orgId') || "0b22a7d7-08f6-4ae8-804c-7b58c0def7c5";
-                const parkingId = new URLSearchParams(window.location.search).get('parkingId') || "36201249-9e37-4888-887f-d3ebb30d8d38";
-                const kioskId = new URLSearchParams(window.location.search).get('kioskId') || "127";
-
-                const { data } = await tecnova.fetchCurrentKioskDisplay(orgId, parkingId, kioskId);
-                setInitialDisplay(data as SavedDisplayType);
-            } catch (err) {
-                console.error("Error fetching initial display:", err);
-                setError("Failed to load display");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchInitialDisplay();
-    }, []);
-
-    if (loading) {
-        return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-    }
-
-    if (error || !initialDisplay) {
-        return <div className="flex items-center justify-center min-h-screen text-red-500">{error || "No display data"}</div>;
-    }
-
-    const routeInfo = {
-        orgId: new URLSearchParams(window.location.search).get('orgId') || "0b22a7d7-08f6-4ae8-804c-7b58c0def7c5",
-        parkingId: new URLSearchParams(window.location.search).get('parkingId') || "36201249-9e37-4888-887f-d3ebb30d8d38",
-        kioskId: new URLSearchParams(window.location.search).get('kioskId') || "127",
-    };
-
-    console.log(initialDisplay);
-
-    const priceGroup = initialDisplay.PriceGroup;
-    const config = initialDisplay.config;
+    const { config, pricePackages, occupancy } = useDisplay();
 
     if (!config) {
         return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "black" }}>No config available</div>;
     }
 
-    if (typeof config !== 'object' || Array.isArray(config)) {
-        return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "black" }}>Config is invalid: {typeof config}</div>;
-    }
-
     try {
         const textFormatter = (text: string): string => {
-            if (!priceGroup) {
-                return text;
+            let formattedText = text;
+
+            if (!pricePackages || pricePackages.length === 0) {
+                console.log("No price found");
+                return formattedText;
             }
 
-            try {
-                switch (priceGroup.priceType) {
-                    case "FIXED":
-                        return tecnovaClient().formatDisplayTextFixed(text, {
-                            id: priceGroup.id,
-                            priceType: priceGroup.priceType,
-                            priceName: priceGroup.priceName,
-                            data: priceGroup.data,
-                        });
-                    case "MINUTE":
-                        return tecnovaClient().formatDisplayTextMinute(text, {
-                            id: priceGroup.id,
-                            priceType: priceGroup.priceType,
-                            priceName: priceGroup.priceName,
-                            data: priceGroup.data,
-                        });
-                    case "PACKAGE":
-                        return tecnovaClient().formatDisplayTextPackage(text, {
-                            id: priceGroup.id,
-                            priceType: priceGroup.priceType,
-                            priceName: priceGroup.priceName,
-                            data: priceGroup.data,
-                        });
+            const prices = pricePackages.map((p, i) => ({
+                ...p,
+                data: { ...p.data, id: i + 1 },
+            }));
+
+            for (let i = 0; i < prices.length; i++) {
+                const pkg = prices[i];
+                for (const mod of pkg.data.modules) {
+                    const pkgData = pkg.data;
+                    switch (mod.type as "BASE_PRICING:HOURLY" | "BASE_PRICING:ENTRY" | "PACKAGE_INFORMATION") {
+                        case "BASE_PRICING:HOURLY": {
+                            const hourlyMod = mod as any;
+                            hourlyMod.data.Maximums.forEach((max: any) => {
+                                formattedText = formattedText.replace(
+                                    new RegExp(
+                                        `\\{package\\[${pkgData.id}\\]\\.maximums\\[${max.Id}\\]\\.minutes}`,
+                                        "g",
+                                    ),
+                                    tecnovaClient().formatTime(max.Minutes),
+                                );
+
+                                formattedText = formattedText.replace(
+                                    new RegExp(
+                                        `\\{package\\[${pkgData.id}\\]\\.maximums\\[${max.Id}\\]\\.pricing}`,
+                                        "g",
+                                    ),
+                                    formatCAD(
+                                        calculateFieldValue(occupancy, max.PricingType, max.Pricing),
+                                    ),
+                                );
+                            });
+                            break;
+                        }
+                        case "BASE_PRICING:ENTRY": {
+                            const entryMod = mod as any;
+                            break;
+                        }
+                        case "PACKAGE_INFORMATION": {
+                            const pkgInfoMod = mod as any;
+                            break;
+                        }
+                    }
                 }
-            } catch (err) {
-                console.error("Error in textFormatter:", err);
             }
 
-            return text;
+            console.log("formattedText: ", formattedText);
+            return formattedText;
         }
 
         return (
-            /*<AutoScalingDisplayRendere
-                config={config}
-                textFormatter={textFormatter}
-                fit={"fill"}
-                containerStyle={{ maxHeight: "50vh", overflow: "hidden", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}
-            />*/
             <div style={{ background: 'red', height: "fit-content", width: "fit-content" }}>
-                <ResponsiveDisplayRenderer config={config} textFormatter={textFormatter} containerStyle={{ width: "100%", height: "100%" }} />
+                {Array.isArray(config) ? (
+                    <ResponsiveSequenceRenderer config={config} textFormatter={textFormatter} containerStyle={{width: "100%", height: "100%"}} />
+                ) : (
+                    <ResponsiveDisplayRenderer config={config} textFormatter={textFormatter} containerStyle={{ width: "100%", height: "100%" }} />
+                )}
             </div>
         );
     } catch (error) {
