@@ -3,7 +3,7 @@ import './App.css';
 import {ResponsiveDisplayRenderer} from "./components/responsive-display-renderer";
 import {useDisplay} from "./components/providers/display-provider";
 import {tecnovaClient} from "./lib/tecnova-client";
-import {calculateFieldValue, formatCAD} from "./lib/utils";
+import {calculateFieldValue, formatCAD, formatDuration2} from "./lib/utils";
 import ResponsiveSequenceRenderer from "./components/responsive-sequence-renderer";
 
 function App() {
@@ -46,6 +46,16 @@ function App() {
                                 formattedText = formattedText.replace(
                                     new RegExp(
                                         `\\{package\\[${pkgData.id}\\]\\.maximums\\[${max.Id}\\]\\.pricing}`,
+                                        "g",
+                                    ),
+                                    formatCAD(
+                                        calculateFieldValue(occupancy, max.PricingType, max.Pricing),
+                                    ),
+                                );
+
+                                formattedText = formattedText.replace(
+                                    new RegExp(
+                                        `\\{package\\[${pkgData.id}\\]\\.maximums\\[${formatDuration2(max.Minutes).toString()}\\]\\.pricing}`,
                                         "g",
                                     ),
                                     formatCAD(
