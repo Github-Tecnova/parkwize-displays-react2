@@ -63,6 +63,44 @@ function App() {
                                     ),
                                 );
                             });
+
+                            hourlyMod.data.Units.forEach((unit: any) => {
+                                formattedText = formattedText.replace(
+                                    new RegExp(
+                                        `\\{package\\[${pkgData.id}\\]\\.units\\[${unit.Id}\\]\\.minutes}`,
+                                        "g",
+                                    ),
+                                    tecnovaClient().formatTime(unit.Minutes),
+                                );
+
+                                formattedText = formattedText.replace(
+                                    new RegExp(
+                                        `\\{package\\[${pkgData.id}\\]\\.units\\[${unit.Id}\\]\\.pricing}`,
+                                        "g",
+                                    ),
+                                    formatCAD(
+                                        calculateFieldValue(
+                                            0,
+                                            unit.PricingType,
+                                            unit.Pricing,
+                                        ),
+                                    ),
+                                );
+
+                                formattedText = formattedText.replace(
+                                    new RegExp(
+                                        `\\{package\\[${pkgData.id}\\]\\.units\\[${formatDuration2(unit.Minutes).toString()}\\]\\.pricing}`,
+                                        "g",
+                                    ),
+                                    formatCAD(
+                                        calculateFieldValue(
+                                            0,
+                                            unit.PricingType,
+                                            unit.Pricing,
+                                        ),
+                                    ),
+                                );
+                            });
                             break;
                         }
                         case "BASE_PRICING:ENTRY": {

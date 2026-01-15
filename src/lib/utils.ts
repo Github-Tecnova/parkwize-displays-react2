@@ -36,8 +36,10 @@ export function calculateFieldValue(
     return pricing as number;
 }
 
-export const formatDuration2 = (totalMinutes: number) => {
-    if (isNaN(totalMinutes)) return 0;
+export const formatDuration2 = (totalMinutes: number): string => {
+    if (isNaN(totalMinutes)) return "0m";
 
-    return Math.floor(totalMinutes / 60);
+    if (totalMinutes < 60) return `${totalMinutes}m`;
+
+    return `${Math.floor(totalMinutes / 60)}h`;
 };
