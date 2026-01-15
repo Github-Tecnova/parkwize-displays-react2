@@ -1,17 +1,17 @@
+import React from 'react'
+import SequenceRenderer from "./sequence-renderer";
+import {DisplayRenderer} from "./display-renderer";
 
-import React from "react";
-import { DisplayRenderer } from "./display-renderer";
-import { EnhancedDisplayConfig } from "@evovee/tecnova-types";
-
-interface ResponsiveDisplayRendererProps {
-    config: EnhancedDisplayConfig;
+interface Props {
+    config: any;
     fit?: "contain" | "cover" | "fill";
-    containerStyle?: React.CSSProperties;
-    minScale?: number;
     textFormatter: (text: string) => string;
+    minScale?: number;
+    maxScale?: number;
+    containerStyle?: React.CSSProperties;
 }
 
-export function ResponsiveDisplayRenderer({config, fit = "contain", containerStyle, textFormatter}: ResponsiveDisplayRendererProps) {
+export default function ResponsiveSequenceRenderer({config, containerStyle, fit, textFormatter}: Props) {
     return (
         <div
             style={{
@@ -28,12 +28,12 @@ export function ResponsiveDisplayRenderer({config, fit = "contain", containerSty
                 style={{
                     transform: "scale(" + 1 + ")",
                     transformOrigin: "center center",
-                    width: config.canvas.width,
-                    height: config.canvas.height,
+                    width: "1080px",
+                    height: "1920px",
                 }}
             >
-                <DisplayRenderer config={config} textFormatter={textFormatter} />
+                <SequenceRenderer config={config} textFormatter={textFormatter} />
             </div>
         </div>
-    );
+    )
 }

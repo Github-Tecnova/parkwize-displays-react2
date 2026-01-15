@@ -1,12 +1,13 @@
+
 import React, { Component } from "react";
 import { Client, IFrame } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import { EnhancedDisplayConfig, PriceGroupType, SavedDisplayType } from "@evovee/tecnova-types";
-import tecnova from "../../lib/tecnova";
+import {EnhancedDisplayConfig, EnhancedSequenceConfig} from "@evovee/tecnova-types";
 
 type DisplayContextType = {
-    config: EnhancedDisplayConfig | undefined;
-    priceGroup: PriceGroupType | undefined;
+    config: EnhancedDisplayConfig | EnhancedSequenceConfig | undefined;
+    pricePackages: any[];
+    occupancy: number;
 }
 
 export const DisplayContext = React.createContext<DisplayContextType | undefined>(undefined);
@@ -14,7 +15,9 @@ export const DisplayContext = React.createContext<DisplayContextType | undefined
 var WEBSOCKET_URL = "https://api.parkwizeinc.com/ws";
 
 type DisplayProviderState = {
-    display: SavedDisplayType | undefined;
+    config: EnhancedDisplayConfig | EnhancedSequenceConfig | undefined;
+    pricePackages: any[];
+    occupancy: number;
 }
 
 type DisplayProviderProps = {
@@ -23,14 +26,16 @@ type DisplayProviderProps = {
 
 export class DisplayProvider extends Component<DisplayProviderProps, DisplayProviderState> {
     private stompClient: Client | null = null;
-    private orgId: string;
-    private parkingId: string;
-    private kioskId: string;
+    private readonly orgId: string;
+    private readonly parkingId: string;
+    private readonly kioskId: string;
 
     constructor(props: DisplayProviderProps) {
         super(props);
         this.state = {
-            display: undefined
+            config: undefined,
+            pricePackages: [],
+            occupancy: 0,
         };
 
         var params = new URLSearchParams(window.location.search);
@@ -59,15 +64,17 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
 
     private refetchDisplay = (): void => {
         var self = this;
-        tecnova.fetchCurrentKioskDisplay(this.orgId, this.parkingId, this.kioskId)
-            .then(function(response) {
-                if (response.data) {
-                    self.setState({ display: response.data as SavedDisplayType | undefined });
-                }
-            })
-            .catch(function(error: Error) {
-                console.error("Error refetching display:", error);
-            });
+
+        fetch(`https://www.parkwizeinc.com/api/v1/organization/${this.orgId}/parkings/${this.parkingId}/kiosks/${this.kioskId}/display`, {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+                "Content-Type": "application/json",
+                "x-api-key": process.env.REACT_APP_DISPLAY_API_KEY || ""
+            },
+        }).then((response) => response.json()).then((data) => {
+            self.setState({ config: data.config, pricePackages: data.pricePackages, occupancy: data.occupancy })
+        });
     };
 
     private connectWebSocket = (): void => {
@@ -113,10 +120,11 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
     };
 
     render(): React.ReactNode {
-        var display = this.state.display;
+        var config = this.state.config;
         var contextValue: DisplayContextType = {
-            config: display ? display.config : undefined,
-            priceGroup: display ? display.PriceGroup : undefined
+            config: config,
+            pricePackages: this.state.pricePackages,
+            occupancy: this.state.occupancy
         };
 
         return (
