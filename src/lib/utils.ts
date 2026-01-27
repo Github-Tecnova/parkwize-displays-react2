@@ -7,6 +7,15 @@ export function formatCAD(amount: number, locale?: string): string {
     });
 }
 
+export function formatCADSmall(amount: number, locale?: string): string {
+    return amount.toLocaleString(locale === "fr" ? "fr-CA" : "en-CA", {
+        style: "currency",
+        currency: "CAD",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+    });
+}
+
 function calculateDynamicField(
     fields: any[],
     occupancyPercent: number,

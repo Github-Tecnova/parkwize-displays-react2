@@ -3,11 +3,11 @@ import './App.css';
 import {ResponsiveDisplayRenderer} from "./components/responsive-display-renderer";
 import {useDisplay} from "./components/providers/display-provider";
 import {tecnovaClient} from "./lib/tecnova-client";
-import {calculateFieldValue, formatCAD, formatDuration2} from "./lib/utils";
+import {calculateFieldValue, formatCAD, formatCADSmall, formatDuration2} from "./lib/utils";
 import ResponsiveSequenceRenderer from "./components/responsive-sequence-renderer";
 
 function App() {
-    const { config, pricePackages, occupancy } = useDisplay();
+    const { config, pricePackages } = useDisplay();
 
     if (!config) {
         return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "black" }}>No config available</div>;
@@ -62,6 +62,21 @@ function App() {
                                             "g",
                                         ),
                                         formatCAD(
+                                            calculateFieldValue(
+                                                0,
+                                                max.PricingType,
+                                                max.Pricing,
+                                            ),
+                                            lang,
+                                        ),
+                                    );
+
+                                    formattedText = formattedText.replace(
+                                        new RegExp(
+                                            `\\{package\\[${pkgData.id}\\]\\.maximums\\[${formatDuration2(max.Minutes).toString()}\\]\\.pricing-short.${lang}}`,
+                                            "g",
+                                        ),
+                                        formatCADSmall(
                                             calculateFieldValue(
                                                 0,
                                                 max.PricingType,
@@ -132,16 +147,39 @@ function App() {
                             if (!entryMod.data) continue;
                             if (!Array.isArray(entryMod.data)) continue;
                             entryMod.data.forEach((row: any) => {
-                                formattedText = formattedText.replace(
-                                    new RegExp(
-                                        `\\{package\\[${pkgData.id}\\]\\.entry\\[${row.id}\\]\\.pricing}`,
-                                        "g",
-                                    ),
-                                    formatCAD(
-                                        calculateFieldValue(0, row.pricingType, row.pricing),
-                                        formattedText.includes(".fr}") ? "fr-CA" : "en-CA",
-                                    ),
-                                );
+                                const languages = { fr: 1, en: 2 } as const;
+
+                                Object.entries(languages).forEach(([lang, langId]) => {
+                                    formattedText = formattedText.replace(
+                                        new RegExp(
+                                            `\\{package\\[${pkgData.id}\\]\\.entry\\[${row.id}\\]\\.pricing.${lang}}`,
+                                            "g",
+                                        ),
+                                        formatCAD(
+                                            calculateFieldValue(
+                                                0,
+                                                row.pricingType,
+                                                row.pricing,
+                                            ),
+                                            lang,
+                                        ),
+                                    );
+
+                                    formattedText = formattedText.replace(
+                                        new RegExp(
+                                            `\\{package\\[${pkgData.id}\\]\\.entry\\[${row.id}\\]\\.pricing-short.${lang}}`,
+                                            "g",
+                                        ),
+                                        formatCADSmall(
+                                            calculateFieldValue(
+                                                0,
+                                                row.pricingType,
+                                                row.pricing,
+                                            ),
+                                            lang,
+                                        ),
+                                    );
+                                });
                             });
                             break;
                         }
