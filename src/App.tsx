@@ -18,7 +18,10 @@ function App() {
             let formattedText = text;
 
             if (!pricePackages || pricePackages.length === 0) {
-                console.log("No price found");
+                if (text.includes("package")) {
+                    return "=====";
+                }
+
                 return formattedText;
             }
 
@@ -31,10 +34,44 @@ function App() {
                 const pkg = prices[i];
                 for (const mod of pkg.data.modules) {
                     const pkgData = pkg.data;
-                    switch (mod.type as "BASE_PRICING:HOURLY" | "BASE_PRICING:ENTRY" | "PACKAGE_INFORMATION") {
+                    switch (mod.type) {
                         case "BASE_PRICING:HOURLY": {
                             const hourlyMod = mod as any;
                             hourlyMod.data.Maximums.forEach((max: any) => {
+                                const languages = { fr: 1, en: 2 } as const;
+                                // Handle all language replacements in a loop
+                                Object.entries(languages).forEach(([lang, langId]) => {
+                                    formattedText = formattedText.replace(
+                                        new RegExp(
+                                            `\\{package\\[${pkgData.id}\\]\\.maximums\\[${max.Id}\\]\\.pricing.${lang}}`,
+                                            "g",
+                                        ),
+                                        formatCAD(
+                                            calculateFieldValue(
+                                                0,
+                                                max.PricingType,
+                                                max.Pricing,
+                                            ),
+                                            lang,
+                                        ),
+                                    );
+
+                                    formattedText = formattedText.replace(
+                                        new RegExp(
+                                            `\\{package\\[${pkgData.id}\\]\\.maximums\\[${formatDuration2(max.Minutes).toString()}\\]\\.pricing.${lang}}`,
+                                            "g",
+                                        ),
+                                        formatCAD(
+                                            calculateFieldValue(
+                                                0,
+                                                max.PricingType,
+                                                max.Pricing,
+                                            ),
+                                            lang,
+                                        ),
+                                    );
+                                });
+
                                 formattedText = formattedText.replace(
                                     new RegExp(
                                         `\\{package\\[${pkgData.id}\\]\\.maximums\\[${max.Id}\\]\\.minutes}`,
@@ -42,29 +79,43 @@ function App() {
                                     ),
                                     tecnovaClient().formatTime(max.Minutes),
                                 );
-
-                                formattedText = formattedText.replace(
-                                    new RegExp(
-                                        `\\{package\\[${pkgData.id}\\]\\.maximums\\[${max.Id}\\]\\.pricing}`,
-                                        "g",
-                                    ),
-                                    formatCAD(
-                                        calculateFieldValue(occupancy, max.PricingType, max.Pricing),
-                                    ),
-                                );
-
-                                formattedText = formattedText.replace(
-                                    new RegExp(
-                                        `\\{package\\[${pkgData.id}\\]\\.maximums\\[${formatDuration2(max.Minutes).toString()}\\]\\.pricing}`,
-                                        "g",
-                                    ),
-                                    formatCAD(
-                                        calculateFieldValue(occupancy, max.PricingType, max.Pricing),
-                                    ),
-                                );
                             });
 
                             hourlyMod.data.Units.forEach((unit: any) => {
+                                const languages = { fr: 1, en: 2 } as const;
+                                // Handle all language replacements in a loop
+                                Object.entries(languages).forEach(([lang, langId]) => {
+                                    formattedText = formattedText.replace(
+                                        new RegExp(
+                                            `\\{package\\[${pkgData.id}\\]\\.units\\[${unit.Id}\\]\\.pricing.${lang}}`,
+                                            "g",
+                                        ),
+                                        formatCAD(
+                                            calculateFieldValue(
+                                                0,
+                                                unit.PricingType,
+                                                unit.Pricing,
+                                            ),
+                                            lang,
+                                        ),
+                                    );
+
+                                    formattedText = formattedText.replace(
+                                        new RegExp(
+                                            `\\{package\\[${pkgData.id}\\]\\.units\\[${formatDuration2(unit.Minutes).toString()}\\]\\.pricing.${lang}}`,
+                                            "g",
+                                        ),
+                                        formatCAD(
+                                            calculateFieldValue(
+                                                0,
+                                                unit.PricingType,
+                                                unit.Pricing,
+                                            ),
+                                            lang,
+                                        ),
+                                    );
+                                });
+
                                 formattedText = formattedText.replace(
                                     new RegExp(
                                         `\\{package\\[${pkgData.id}\\]\\.units\\[${unit.Id}\\]\\.minutes}`,
@@ -72,47 +123,72 @@ function App() {
                                     ),
                                     tecnovaClient().formatTime(unit.Minutes),
                                 );
-
-                                formattedText = formattedText.replace(
-                                    new RegExp(
-                                        `\\{package\\[${pkgData.id}\\]\\.units\\[${unit.Id}\\]\\.pricing}`,
-                                        "g",
-                                    ),
-                                    formatCAD(
-                                        calculateFieldValue(
-                                            0,
-                                            unit.PricingType,
-                                            unit.Pricing,
-                                        ),
-                                    ),
-                                );
-
-                                formattedText = formattedText.replace(
-                                    new RegExp(
-                                        `\\{package\\[${pkgData.id}\\]\\.units\\[${formatDuration2(unit.Minutes).toString()}\\]\\.pricing}`,
-                                        "g",
-                                    ),
-                                    formatCAD(
-                                        calculateFieldValue(
-                                            0,
-                                            unit.PricingType,
-                                            unit.Pricing,
-                                        ),
-                                    ),
-                                );
                             });
                             break;
                         }
                         case "BASE_PRICING:ENTRY": {
                             const entryMod = mod as any;
+                            if (!entryMod) continue;
+                            if (!entryMod.data) continue;
+                            if (!Array.isArray(entryMod.data)) continue;
+                            entryMod.data.forEach((row: any) => {
+                                formattedText = formattedText.replace(
+                                    new RegExp(
+                                        `\\{package\\[${pkgData.id}\\]\\.entry\\[${row.id}\\]\\.pricing}`,
+                                        "g",
+                                    ),
+                                    formatCAD(
+                                        calculateFieldValue(0, row.pricingType, row.pricing),
+                                        formattedText.includes(".fr}") ? "fr-CA" : "en-CA",
+                                    ),
+                                );
+                            });
                             break;
                         }
                         case "PACKAGE_INFORMATION": {
                             const pkgInfoMod = mod as any;
-                            break;
+
+                            const languages = { fr: 1, en: 2 } as const;
+
+                            // Handle all language replacements in a loop
+                            Object.entries(languages).forEach(([lang, langId]) => {
+                                formattedText = formattedText.replace(
+                                    new RegExp(
+                                        `\\{package\\[${pkgData.id}\\]\\.info\\.title\\.${lang}}`,
+                                        "g",
+                                    ),
+                                    pkgInfoMod.data.title?.[
+                                        lang as keyof typeof pkgInfoMod.data.title
+                                        ],
+                                );
+
+                                formattedText = formattedText.replace(
+                                    new RegExp(
+                                        `\\{package\\[${pkgData.id}\\]\\.info\\.line1\\.${lang}}`,
+                                        "g",
+                                    ),
+                                    pkgInfoMod.data.line1?.[
+                                        lang as keyof typeof pkgInfoMod.data.line1
+                                        ],
+                                );
+
+                                formattedText = formattedText.replace(
+                                    new RegExp(
+                                        `\\{package\\[${pkgData.id}\\]\\.info\\.line2\\.${lang}}`,
+                                        "g",
+                                    ),
+                                    pkgInfoMod.data.line2?.[
+                                        lang as keyof typeof pkgInfoMod.data.line2
+                                        ],
+                                );
+                            });
                         }
                     }
                 }
+            }
+
+            if (formattedText.includes("package")) {
+                return "=====";
             }
 
             console.log("formattedText: ", formattedText);

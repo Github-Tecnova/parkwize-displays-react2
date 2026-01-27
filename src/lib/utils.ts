@@ -1,5 +1,5 @@
-export function formatCAD(amount: number): string {
-    return amount.toLocaleString("en-CA", {
+export function formatCAD(amount: number, locale?: string): string {
+    return amount.toLocaleString(locale === "fr" ? "fr-CA" : "en-CA", {
         style: "currency",
         currency: "CAD",
         minimumFractionDigits: 2,
