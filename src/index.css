@@ -1,7 +1,7 @@
 @font-face {
   font-family: 'Inter';
   src: url('./assets/fonts/Inter-Variable.ttf') format('truetype');
-  font-weight: normal;
+  font-weight: inherit;
   font-style: normal;
   font-display: swap;
 }
@@ -17,7 +17,7 @@
 @font-face {
   font-family: 'Inter Bold';
   src: url('./assets/fonts/Inter-Variable.ttf') format('truetype');
-  font-weight: 700;
+  font-weight: bold;
   font-style: normal;
   font-display: swap;
 }
