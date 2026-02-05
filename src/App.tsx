@@ -5,12 +5,20 @@ import {useDisplay} from "./components/providers/display-provider";
 import {tecnovaClient} from "./lib/tecnova-client";
 import {calculateFieldValue, formatCAD, formatCADSmall, formatDuration2} from "./lib/utils";
 import ResponsiveSequenceRenderer from "./components/responsive-sequence-renderer";
+import {LucideLoader2} from "lucide-react";
 
 function App() {
     const { config, pricePackages } = useDisplay();
 
     if (!config) {
-        return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "black" }}>No config available</div>;
+        return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "black" }}>
+            <LucideLoader2 style={{
+                animation: 'spin 1s linear infinite',
+                width: 80,
+                height: 80,
+                color: 'black'
+            }} />
+        </div>;
     }
 
     try {
