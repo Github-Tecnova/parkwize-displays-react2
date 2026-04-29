@@ -39,9 +39,9 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
         };
 
         var params = new URLSearchParams(window.location.search);
-        this.orgId = params.get('orgId') || "0b22a7d7-08f6-4ae8-804c-7b58c0def7c5";
-        this.parkingId = params.get('parkingId') || "36201249-9e37-4888-887f-d3ebb30d8d38";
-        this.kioskId = params.get('kioskId') || "127";
+        this.orgId = params.get('orgId') || "";
+        this.parkingId = params.get('parkingId') || "";
+        this.kioskId = params.get('kioskId') || "";
     }
 
     componentDidMount(): void {
@@ -74,6 +74,8 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
             },
         }).then((response) => response.json()).then((data) => {
             self.setState({ config: data.config, pricePackages: data.pricePackages, occupancy: data.occupancy })
+        }).catch((error) => {
+            console.error("Error fetching display:", error);
         });
     };
 
@@ -101,6 +103,12 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
                     self.stompClient.subscribe(topic, function(message) {
                         console.log("Display update received:", message.body);
                         self.refetchDisplay();
+                    });
+
+                    self.stompClient.subscribe("/topic/occupancy/" + self.orgId + "/" + self.parkingId, function(message) {
+                        console.log("Occupancy update received:", message.body);
+                        const {occupancy}: { occupancy: number } = JSON.parse(message.body);
+                        self.setState({ ...self.state, occupancy: occupancy });
                     });
                 }
             },
