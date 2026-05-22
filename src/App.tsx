@@ -4,7 +4,7 @@ import {useDisplay} from "./components/providers/display-provider";
 import {tecnovaClient} from "./lib/tecnova-client";
 import {calculateFieldValue, formatCAD, formatCADSmall, formatDuration2} from "./lib/utils";
 import {LucideLoader2} from "lucide-react";
-import {ResponsiveDesignRenderer} from "@parkwize/design-renderer";
+import {StaticDesignRenderer} from "./components/static-renderers";
 
 function App() {
     const { config, pricePackages } = useDisplay();
@@ -247,13 +247,9 @@ function App() {
                 {/*) : (*/}
                 {/*    <ResponsiveDisplayRenderer config={config} textFormatter={textFormatter} containerStyle={{ width: "100%", height: "100%" }} />*/}
                 {/*)}*/}
-                <ResponsiveDesignRenderer
+                <StaticDesignRenderer
                     config={config}
                     textFormatter={textFormatter}
-                    containerStyle={{
-                        width: "100%",
-                        height: "100%",
-                    }}
                 />
             </div>
         );

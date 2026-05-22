@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "@evovee/tecnova-api": "^1.2.58",
-    "@parkwize/design-renderer": "^1.1.14",
     "@parkwize/types": "^1.1.10",
     "@stomp/stompjs": "^7.2.1",
     "lucide-react": "^0.563.0",
