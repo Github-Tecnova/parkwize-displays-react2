@@ -3,9 +3,10 @@ import React, { Component } from "react";
 import { Client, IFrame } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import {EnhancedDisplayConfig, EnhancedSequenceConfig} from "@evovee/tecnova-types";
+import { DesignFrame } from "@parkwize/types";
 
 type DisplayContextType = {
-    config: EnhancedDisplayConfig | EnhancedSequenceConfig | undefined;
+    config: DesignFrame[];
     pricePackages: any[];
     occupancy: number;
 }
@@ -15,7 +16,7 @@ export const DisplayContext = React.createContext<DisplayContextType | undefined
 var WEBSOCKET_URL = "https://api.parkwizeinc.com/ws";
 
 type DisplayProviderState = {
-    config: EnhancedDisplayConfig | EnhancedSequenceConfig | undefined;
+    config: DesignFrame[];
     pricePackages: any[];
     occupancy: number;
 }
@@ -33,7 +34,7 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
     constructor(props: DisplayProviderProps) {
         super(props);
         this.state = {
-            config: undefined,
+            config: [],
             pricePackages: [],
             occupancy: 0,
         };
@@ -65,15 +66,16 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
     private refetchDisplay = (): void => {
         var self = this;
 
-        fetch(`https://www.parkwizeinc.com/api/v1/organization/${this.orgId}/parkings/${this.parkingId}/kiosks/${this.kioskId}/display`, {
+        fetch(`https://api.parkwize.ai/client/design/${this.orgId}/${this.parkingId}/${this.kioskId}`, {
             method: "GET",
             cache: "no-store",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-key": process.env.REACT_APP_DISPLAY_API_KEY || ""
+                "Authorization": process.env.REACT_APP_DISPLAY_API_KEY || ""
             },
-        }).then((response) => response.json()).then((data) => {
-            self.setState({ config: data.config, pricePackages: data.pricePackages, occupancy: data.occupancy })
+        }).then(async (response) => await response.json()).then((data) => {
+            console.log("Display data:", data);
+            self.setState({ config: data.design.config, pricePackages: data.pricePackages, occupancy: data.occupancy })
         }).catch((error) => {
             console.error("Error fetching display:", error);
         });
