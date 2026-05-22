@@ -6,6 +6,7 @@ import {tecnovaClient} from "./lib/tecnova-client";
 import {calculateFieldValue, formatCAD, formatCADSmall, formatDuration2} from "./lib/utils";
 import ResponsiveSequenceRenderer from "./components/responsive-sequence-renderer";
 import {LucideLoader2} from "lucide-react";
+import {DesignRenderer, ResponsiveDesignRenderer} from "@parkwize/design-renderer";
 
 function App() {
     const { config, pricePackages } = useDisplay();
@@ -243,11 +244,19 @@ function App() {
 
         return (
             <div style={{ background: 'red', height: "fit-content", width: "fit-content" }}>
-                {Array.isArray(config) ? (
-                    <ResponsiveSequenceRenderer config={config} textFormatter={textFormatter} containerStyle={{width: "100%", height: "100%"}} />
-                ) : (
-                    <ResponsiveDisplayRenderer config={config} textFormatter={textFormatter} containerStyle={{ width: "100%", height: "100%" }} />
-                )}
+                {/*{Array.isArray(config) ? (*/}
+                {/*    <ResponsiveSequenceRenderer config={config} textFormatter={textFormatter} containerStyle={{width: "100%", height: "100%"}} />*/}
+                {/*) : (*/}
+                {/*    <ResponsiveDisplayRenderer config={config} textFormatter={textFormatter} containerStyle={{ width: "100%", height: "100%" }} />*/}
+                {/*)}*/}
+                <ResponsiveDesignRenderer
+                    config={config}
+                    textFormatter={textFormatter}
+                    containerStyle={{
+                        width: "100%",
+                        height: "100%",
+                    }}
+                />
             </div>
         );
     } catch (error) {
