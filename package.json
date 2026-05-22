@@ -16,8 +16,8 @@
     "text-encoding": "^0.7.0"
   },
   "scripts": {
-    "start": "PORT=3006 react-scripts start",
-    "build": "react-scripts build",
+    "start": "PORT=3006 craco start",
+    "build": "craco build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -38,6 +38,7 @@
     ]
   },
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
     "@types/node": "^16.18.126",
     "@types/react": "^16.14.68",
     "@types/react-dom": "^16.9.25",
