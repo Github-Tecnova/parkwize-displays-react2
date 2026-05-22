@@ -1,12 +1,10 @@
 import React from 'react';
 import './App.css';
-import {ResponsiveDisplayRenderer} from "./components/responsive-display-renderer";
 import {useDisplay} from "./components/providers/display-provider";
 import {tecnovaClient} from "./lib/tecnova-client";
 import {calculateFieldValue, formatCAD, formatCADSmall, formatDuration2} from "./lib/utils";
-import ResponsiveSequenceRenderer from "./components/responsive-sequence-renderer";
 import {LucideLoader2} from "lucide-react";
-import {DesignRenderer, ResponsiveDesignRenderer} from "@parkwize/design-renderer";
+import {ResponsiveDesignRenderer} from "@parkwize/design-renderer";
 
 function App() {
     const { config, pricePackages } = useDisplay();
