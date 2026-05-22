@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@evovee/tecnova-api": "^1.2.58",
     "@parkwize/design-renderer": "^1.1.9",
     "@stomp/stompjs": "^7.2.1",
     "lucide-react": "^0.563.0",
