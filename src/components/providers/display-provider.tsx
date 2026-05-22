@@ -2,11 +2,9 @@
 import React, { Component } from "react";
 import { Client, IFrame } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import {EnhancedDisplayConfig, EnhancedSequenceConfig} from "@evovee/tecnova-types";
-import { DesignFrame } from "@parkwize/types";
 
 type DisplayContextType = {
-    config: DesignFrame[];
+    config: any[];
     pricePackages: any[];
     occupancy: number;
 }
@@ -16,7 +14,7 @@ export const DisplayContext = React.createContext<DisplayContextType | undefined
 var WEBSOCKET_URL = "https://api.parkwizeinc.com/ws";
 
 type DisplayProviderState = {
-    config: DesignFrame[];
+    config: any[];
     pricePackages: any[];
     occupancy: number;
 }

@@ -3,20 +3,12 @@
 // Scale is derived directly from the canvas config — no DOM observation needed.
 
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Background,
-  DesignFrame,
-  DisplayElement,
-  ImageElement,
-  ShapeElement,
-  TextElement,
-} from "@parkwize/types";
 
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
 
-const renderBackground = (background: Background): string => {
+const renderBackground = (background: any): string => {
   switch (background.type) {
     case "color":
       return background.color || "#ffffff";
@@ -48,7 +40,7 @@ const renderBackground = (background: Background): string => {
 // ---------------------------------------------------------------------------
 
 interface StaticFrameRendererProps {
-  config: DesignFrame;
+  config: any;
   textFormatter: (text: string) => string;
 }
 
@@ -70,7 +62,7 @@ export function StaticFrameRenderer({
     document.head.appendChild(styleSheet);
   }, []);
 
-  var ElementRenderer = function ({ element }: { element: DisplayElement }) {
+  var ElementRenderer = function ({ element }: { element: any }) {
     var baseStyles: React.CSSProperties = {
       position: "absolute",
       left: element.position.x,
@@ -111,7 +103,7 @@ export function StaticFrameRenderer({
 
     switch (element.type) {
       case "text":
-        var textElement = element as TextElement;
+        var textElement = element as any;
         return (
           <div
             style={Object.assign({}, baseStyles, {
@@ -153,7 +145,7 @@ export function StaticFrameRenderer({
         );
 
       case "image":
-        var imageElement = element as ImageElement;
+        var imageElement = element as any;
         return (
           <div
             style={Object.assign({}, baseStyles, {
@@ -176,7 +168,7 @@ export function StaticFrameRenderer({
         );
 
       case "shape":
-        var shapeElement = element as ShapeElement;
+        var shapeElement = element as any;
         var shapeBackground = (function () {
           if (shapeElement.fillType === "gradient" && shapeElement.fillGradient) {
             var grad = shapeElement.fillGradient;
@@ -225,7 +217,7 @@ export function StaticFrameRenderer({
           config.display_config.canvas.padding.left + "px",
       }}
     >
-      {config.display_config.elements.map(function (element) {
+      {config.display_config.elements.map(function (element: any) {
         return <ElementRenderer key={element.id} element={element} />;
       })}
     </div>
@@ -240,8 +232,8 @@ export function StaticFrameRenderer({
 // ---------------------------------------------------------------------------
 
 interface StaticDesignRendererProps {
-  config: DesignFrame[];
-  onFrameChange?: (frame: DesignFrame, index: number) => void;
+  config: any[];
+  onFrameChange?: (frame: any, index: number) => void;
   className?: string;
   autoPlay?: boolean;
   loop?: boolean;
