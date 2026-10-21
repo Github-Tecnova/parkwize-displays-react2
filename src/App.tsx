@@ -241,7 +241,7 @@ function App() {
         }
 
         return (
-            <div style={{ background: 'red', height: "fit-content", width: "fit-content" }}>
+            <div style={{ background: 'black', height: "fit-content", width: "fit-content" }}>
                 {/*{Array.isArray(config) ? (*/}
                 {/*    <ResponsiveSequenceRenderer config={config} textFormatter={textFormatter} containerStyle={{width: "100%", height: "100%"}} />*/}
                 {/*) : (*/}
@@ -267,3 +267,25 @@ function App() {
 }
 
 export default App;
+
+// import React from "react";
+//
+// const imageUrl =
+//     'https://mop1d9vixutfhs5k.public.blob.vercel-storage.com/assets/ef9189e4-57c3-4eba-98c1-2682d3b87fcb/root/parkeo.png';
+//
+// function App() {
+//     return (
+//         <div
+//             style={{
+//                 width: '100vw',
+//                 height: '100vh',
+//                 backgroundImage: `url("${imageUrl}")`,
+//                 backgroundRepeat: 'no-repeat',
+//                 backgroundPosition: 'center',
+//                 backgroundSize: 'cover',
+//             }}
+//         />
+//     );
+// }
+//
+// export default App;
