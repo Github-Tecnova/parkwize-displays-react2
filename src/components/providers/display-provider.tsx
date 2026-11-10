@@ -9,7 +9,11 @@ type DisplayContextType = {
 
 export const DisplayContext = React.createContext<DisplayContextType | undefined>(undefined);
 
-var WEBSOCKET_URL = process.env.REACT_APP_NODE_ENV === 'production' ? "https://api.parkwizeinc.com/ws" : 'http://localhost:3002/ws';
+var WEBSOCKET_URL = process.env.REACT_APP_ENVIRONMENT === 'production'
+    ? "https://api.parkwizeinc.com/ws"
+    : process.env.REACT_APP_ENVIRONMENT === 'preview'
+        ? "https://dev2.api.parkwize.ai/ws"
+        : 'http://localhost:3002/ws';
 
 type DisplayProviderState = {
     config: any[];
@@ -65,7 +69,7 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
     private refetchDisplay = (): void => {
         var self = this;
 
-        const url = process.env.ENVIRONMENT === "production" ? `https://api.parkwize.ai/open/display-api/${this.orgId}/${this.kioskId}` : process.env.ENVIRONMENT === "preview" ? `https://dev2.api.parkwize.ai/open/display-api/${this.orgId}/${this.kioskId}` : `http://localhost:3002/open/display-api/${this.orgId}/${this.kioskId}`;
+        const url = process.env.REACT_APP_ENVIRONMENT === "production" ? `https://api.parkwize.ai/open/display-api/${this.orgId}/${this.kioskId}` : process.env.REACT_APP_ENVIRONMENT === "preview" ? `https://dev2.api.parkwize.ai/open/display-api/${this.orgId}/${this.kioskId}` : `http://localhost:3002/open/display-api/${this.orgId}/${this.kioskId}`;
 
         console.log("using: ", url);
 

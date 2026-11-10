@@ -5,7 +5,9 @@ FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 
 ARG ENVIRONMENT=preview
-ENV ENVIRONMENT=$ENVIRONMENT
+# Create React App only exposes variables prefixed with REACT_APP_ and inlines
+# them while building the static bundle.
+ENV REACT_APP_ENVIRONMENT=$ENVIRONMENT
 
 COPY package.json package-lock.json ./
 
