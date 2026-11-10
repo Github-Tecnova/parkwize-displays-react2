@@ -4,8 +4,8 @@ FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 
-ARG REACT_APP_NODE_ENV=production
-ENV REACT_APP_NODE_ENV=$REACT_APP_NODE_ENV
+ARG ENVIRONMENT=preview
+ENV ENVIRONMENT=$ENVIRONMENT
 
 COPY package.json package-lock.json ./
 
