@@ -65,7 +65,7 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
     private refetchDisplay = (): void => {
         var self = this;
 
-        const url = process.env.REACT_APP_NODE_ENV === "production" ? `https://api.parkwize.ai/open/display-api/${this.orgId}/${this.kioskId}` : `http://localhost:3002/open/display-api/${this.orgId}/${this.kioskId}`;
+        const url = process.env.REACT_APP_NODE_ENV === "production" ? `https://api.parkwize.ai/open/display-api/${this.orgId}/${this.kioskId}` : process.env.REACT_APP_NODE_ENV === "preview" ? `https://dev2.api.parkwize.ai/open/display-api/${this.orgId}/${this.kioskId}` : `http://localhost:3002/open/display-api/${this.orgId}/${this.kioskId}`;
 
         console.log("using: ", url);
 
