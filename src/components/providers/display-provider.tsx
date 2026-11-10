@@ -74,7 +74,6 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
             cache: "no-store",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + process.env.REACT_APP_PUBLIC_KEY + "." + process.env.REACT_APP_PRIVATE_KEY
             },
         }).then(async (response) => await response.json()).then((data) => {
             console.log("Display data:", data);
