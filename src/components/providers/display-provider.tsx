@@ -1,21 +1,22 @@
-
 import React, { Component } from "react";
 import { Client, IFrame } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
 type DisplayContextType = {
     config: any[];
-    pricePackages: any[];
     occupancy: number;
 }
 
 export const DisplayContext = React.createContext<DisplayContextType | undefined>(undefined);
 
-var WEBSOCKET_URL = "https://api.parkwizeinc.com/ws";
+var WEBSOCKET_URL = process.env.REACT_APP_ENVIRONMENT === 'production'
+    ? "https://api.parkwizeinc.com/ws"
+    : process.env.REACT_APP_ENVIRONMENT === 'preview'
+        ? "https://dev2.api.parkwize.ai/ws"
+        : 'http://localhost:3002/ws';
 
 type DisplayProviderState = {
     config: any[];
-    pricePackages: any[];
     occupancy: number;
 }
 
@@ -33,7 +34,6 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
         super(props);
         this.state = {
             config: [],
-            pricePackages: [],
             occupancy: 0,
         };
 
@@ -44,57 +44,69 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
     }
 
     componentDidMount(): void {
-        // Fetch initial display data
+        console.log("DisplayProvider mounted");
         this.refetchDisplay();
-        // Then setup WebSocket for updates
         this.connectWebSocket();
     }
 
     componentWillUnmount(): void {
+        console.log("DisplayProvider unmounted");
         this.disconnect();
     }
 
-    private disconnect = (): void => {
-        if (this.stompClient) {
-            this.stompClient.deactivate();
-            this.stompClient = null;
+    private disconnect = async (): Promise<void> => {
+        console.log("Calling STOMP deactivate");
+
+        const client = this.stompClient;
+        this.stompClient = null;
+
+        if (client) {
+            await client.deactivate();
+            console.log("STOMP deactivated");
         }
     };
 
     private refetchDisplay = (): void => {
         var self = this;
 
-        fetch(`https://api.parkwize.ai/client/design/${this.orgId}/${this.parkingId}/${this.kioskId}`, {
+        const url = process.env.REACT_APP_ENVIRONMENT === "production" ? `https://api.parkwize.ai/open/display-api/${this.orgId}/${this.kioskId}` : process.env.REACT_APP_ENVIRONMENT === "preview" ? `https://dev2.api.parkwize.ai/open/display-api/${this.orgId}/${this.kioskId}` : `http://localhost:3002/open/display-api/${this.orgId}/${this.kioskId}`;
+
+        console.log("using: ", url);
+
+        fetch(url, {
             method: "GET",
             cache: "no-store",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": process.env.REACT_APP_DISPLAY_API_KEY || ""
             },
         }).then(async (response) => await response.json()).then((data) => {
             console.log("Display data:", data);
-            self.setState({ config: data.design.config, pricePackages: data.pricePackages, occupancy: data.occupancy })
+            self.setState({ config: data.design.config, occupancy: data.occupancy })
         }).catch((error) => {
             console.error("Error fetching display:", error);
         });
     };
 
     private connectWebSocket = (): void => {
-        var self = this;
+        if (this.stompClient) {
+            console.log("STOMP client already exists; skipping connection");
+            return;
+        }
 
-        var topic = "/topic/displays/" + this.orgId + "/" + this.parkingId +
-            (this.kioskId ? "/" + this.kioskId : "");
+        var self = this;
+        var topic = "/topic/displays/" + this.orgId + "/" + this.kioskId;
 
         this.stompClient = new Client({
             webSocketFactory: function() {
                 return new SockJS(WEBSOCKET_URL) as WebSocket;
             },
             reconnectDelay: 5000,
-            heartbeatIncoming: 4000,
-            heartbeatOutgoing: 4000,
+            heartbeatIncoming: 0,
+            heartbeatOutgoing: 0,
+            connectionTimeout: 10000,
             debug: function(_str: string) {
                 // Uncomment below for debugging
-                // console.log(_str);
+                console.log(_str);
             },
             onConnect: function() {
                 console.log("STOMP connected");
@@ -119,6 +131,9 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
                 console.error("STOMP error:", frame.headers['message']);
                 console.error("Details:", frame.body);
             },
+            onWebSocketClose: function(event: Event) {
+                console.log("WebSocket closed:", event);
+            },
             onWebSocketError: function(event: Event) {
                 console.error("WebSocket error:", event);
             }
@@ -131,7 +146,6 @@ export class DisplayProvider extends Component<DisplayProviderProps, DisplayProv
         var config = this.state.config;
         var contextValue: DisplayContextType = {
             config: config,
-            pricePackages: this.state.pricePackages,
             occupancy: this.state.occupancy
         };
 
