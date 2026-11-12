@@ -5,6 +5,7 @@ FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 
 ARG ENVIRONMENT
+ARG REACT_APP_ENVIRONMENT
 
 COPY package.json package-lock.json ./
 
